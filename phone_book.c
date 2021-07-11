@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     fclose(fp);
     exit(0);
   } else if (strcmp(argv[1], "search") == 0) {  /* Handle search */
-    FILE *fp = open_db_file();
+    	FILE *fp = open_db_file();
     	if (search (fp, argv[2]) == 0)	{
     		printf("no match\n");
 			fclose(fp);
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 		fclose(fp);
 		exit(0);
 	}
-  } else if (strcmp(argv[1], "delete") == 0) {  /* Handle delete */
+   else if (strcmp(argv[1], "delete") == 0) {  /* Handle delete */
     if (argc != 3) {
       print_usage("Improper arguments for delete", argv[0]);
       exit(1);
@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
   }
 }
 
+
 FILE *open_db_file() {
   FILE *fp=fopen(DB, "r");
   if (fp == NULL) {
@@ -100,12 +101,12 @@ FILE *open_db_file() {
   return fp;
 }
   
-void free_entries(entry *p) 
-{
+void free_entries(entry *p) {
   while (p != NULL)	{
   free(p);
   p = p -> next;
   }
+  
 }
 
 void print_usage(char *message, char *progname) {
@@ -142,20 +143,17 @@ entry *load_entries(FILE *fp) {
   entry *tmp = NULL;
   /* Description of %20[^,\n]
      % is the start of the specifier (like %s, %i etc.)
-
      20 is the maximum number of characters that this will take. We
         know that names and phone numbers will be 20 bytes maximum so
         we limit it to that. %20s will read in 20 character strings
         (including the , to separate the name and phone number. That's
         why we use
-
     [^,\n] Square brackets are used to indicate a set of allowed
            characters [abc] means only a, b, or c. With the ^, it's
            used to specify a set of disallowed characters. So [^abc]
            means any character *except* a, b, or c. [^,] means any
            character except a , [^,\n] means any character except a
            comma(,) or a newline(\n).
-
     %20[^,\n] will match a string of characters with a maximum length
      of 20 characters that doesn't have a comma(,) or a newline(\n).
   */        
@@ -196,19 +194,32 @@ void list(FILE *db_file) {
     count++;
   }
   printf("Total entries :  %d\n", count);
+  
   free_entries(base);
 }
 
+int search (FILE *db_file, char *sterm)	{
+	int ret = 0;
+	entry *p = load_entries(db_file);
+	entry *base = p;
+	while (p!=NULL)	{
+		if (strcmp(sterm,p->name) == 0)	{
+			printf("%10s\n", p->phone);
+			ret++;
+		}
+		p=p->next;
+	}
+	free_entries(base);
+	return ret;
+}
 
-int delete(FILE *db_file, char *name)
-{
+int delete(FILE *db_file, char *name) {
   entry *p = load_entries(db_file);
   entry *base = p;
   entry *prev = NULL;
   entry *del = NULL ; /* Node to be deleted */
   int deleted = 0;
-  while (p!=NULL) 
-  {
+  while (p!=NULL) {
     if (strcmp(p->name, name) == 0) {
       deleted = 1;
       if (p == base)
@@ -216,9 +227,10 @@ int delete(FILE *db_file, char *name)
       else
       	prev -> next = p -> next;
 		break;
-  }
+    }
 	 prev = p;  
     p = p -> next;
+    
   }
   write_all_entries(base);
   free_entries(base);
